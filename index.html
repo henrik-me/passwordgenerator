@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Password Generator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>🔐 Password Generator</h1>
+      <p>Generate strong, random passwords for any service.</p>
+    </header>
+
+    <!-- Output -->
+    <div class="output-area">
+      <div id="password-output" aria-live="polite"></div>
+      <div class="output-actions">
+        <button id="generate-btn" class="btn btn-primary">Generate</button>
+        <button id="copy-btn" class="btn btn-secondary" disabled>Copy</button>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+
+      <!-- Length -->
+      <h2>Length</h2>
+      <div class="length-control">
+        <label for="length-slider">Characters</label>
+        <input type="range" id="length-slider" min="8" max="128" value="20" />
+        <span id="length-value">20</span>
+      </div>
+
+      <!-- Character Sets -->
+      <h2>Character Sets</h2>
+
+      <div class="toggle-row">
+        <label for="include-uppercase">Uppercase (A–Z)</label>
+        <div class="switch">
+          <input type="checkbox" id="include-uppercase" checked />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label for="include-lowercase">Lowercase (a–z)</label>
+        <div class="switch">
+          <input type="checkbox" id="include-lowercase" checked />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label for="include-digits">Digits (0–9)</label>
+        <div class="switch">
+          <input type="checkbox" id="include-digits" checked />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label for="include-special">Special (!@#$…)</label>
+        <div class="switch">
+          <input type="checkbox" id="include-special" checked />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <!-- Additional Options -->
+      <h2>Additional Options</h2>
+
+      <div class="toggle-row">
+        <label for="exclude-ambiguous">Exclude ambiguous (0Oo1lI|)</label>
+        <div class="switch">
+          <input type="checkbox" id="exclude-ambiguous" />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label for="exclude-similar">Exclude similar ({}[]()…)</label>
+        <div class="switch">
+          <input type="checkbox" id="exclude-similar" />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label for="no-consecutive-repeats">No consecutive repeats</label>
+        <div class="switch">
+          <input type="checkbox" id="no-consecutive-repeats" checked />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label for="begin-with-letter">Begin with a letter</label>
+        <div class="switch">
+          <input type="checkbox" id="begin-with-letter" />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <div id="error-msg" role="alert"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

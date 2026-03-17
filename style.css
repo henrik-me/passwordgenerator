@@ -1,0 +1,294 @@
+/* ============================================================
+   Password Generator — style.css
+   Responsive, clean UI. Zero external dependencies.
+   ============================================================ */
+
+/* ---- Reset & base ---- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --clr-bg: #0f1117;
+  --clr-surface: #1a1d27;
+  --clr-surface-alt: #232733;
+  --clr-border: #2e3345;
+  --clr-text: #e4e6ef;
+  --clr-text-dim: #8b8fa3;
+  --clr-accent: #6c63ff;
+  --clr-accent-hover: #857eff;
+  --clr-danger: #f44;
+  --clr-success: #2ecc71;
+  --radius: 10px;
+  --transition: 0.2s ease;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+  line-height: 1.5;
+}
+
+/* ---- Layout ---- */
+
+.app {
+  width: 100%;
+  max-width: 520px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+header p {
+  color: var(--clr-text-dim);
+  font-size: 0.9rem;
+  margin-top: 0.35rem;
+}
+
+/* ---- Output area ---- */
+
+.output-area {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+#password-output {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.2rem;
+  word-break: break-all;
+  min-height: 1.8rem;
+  color: var(--clr-accent);
+  margin-bottom: 1rem;
+  user-select: all;
+}
+
+.output-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+/* ---- Buttons ---- */
+
+.btn {
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--clr-accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--clr-accent-hover);
+}
+
+.btn-secondary {
+  background: var(--clr-surface-alt);
+  color: var(--clr-text);
+  border: 1px solid var(--clr-border);
+}
+
+.btn-secondary:hover {
+  background: var(--clr-border);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-secondary.copied {
+  background: var(--clr-success);
+  color: #fff;
+  border-color: var(--clr-success);
+}
+
+/* ---- Controls panel ---- */
+
+.controls {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.controls h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--clr-text-dim);
+  margin-bottom: 0.85rem;
+}
+
+.controls h2:not(:first-child) {
+  margin-top: 1.25rem;
+}
+
+/* ---- Length slider ---- */
+
+.length-control {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.length-control label {
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.length-control input[type='range'] {
+  flex: 1;
+  accent-color: var(--clr-accent);
+  height: 6px;
+}
+
+#length-value {
+  font-weight: 700;
+  font-size: 1rem;
+  min-width: 2.2rem;
+  text-align: right;
+  color: var(--clr-accent);
+}
+
+/* ---- Toggle switch ---- */
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+
+.toggle-row + .toggle-row {
+  border-top: 1px solid var(--clr-border);
+}
+
+.toggle-row label {
+  font-size: 0.9rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch .slider {
+  position: absolute;
+  inset: 0;
+  background: var(--clr-surface-alt);
+  border: 1px solid var(--clr-border);
+  border-radius: 24px;
+  transition: background var(--transition), border-color var(--transition);
+  cursor: pointer;
+}
+
+.switch .slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 2px;
+  background: var(--clr-text-dim);
+  border-radius: 50%;
+  transition: transform var(--transition), background var(--transition);
+}
+
+.switch input:checked + .slider {
+  background: var(--clr-accent);
+  border-color: var(--clr-accent);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(20px);
+  background: #fff;
+}
+
+.switch input:focus-visible + .slider {
+  outline: 2px solid var(--clr-accent-hover);
+  outline-offset: 2px;
+}
+
+/* ---- Error message ---- */
+
+#error-msg {
+  color: var(--clr-danger);
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: 1rem;
+  min-height: 1.2rem;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+#error-msg.visible {
+  opacity: 1;
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 480px) {
+  body {
+    padding: 1rem 0.5rem;
+  }
+
+  header h1 {
+    font-size: 1.3rem;
+  }
+
+  #password-output {
+    font-size: 1rem;
+  }
+
+  .btn {
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+  }
+}
