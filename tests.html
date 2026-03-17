@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Password Generator — Tests</title>
+  <style>
+    body { font-family: monospace; background: #111; color: #eee; padding: 1.5rem; line-height: 1.6; }
+    .pass { color: #2ecc71; }
+    .fail { color: #e74c3c; }
+    #summary { margin-top: 1rem; font-size: 1.1rem; font-weight: bold; border-top: 1px solid #333; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<h2>Password Generator — Test Suite</h2>
+<pre id="log"></pre>
+<div id="summary"></div>
+<script src="app.js"></script>
+<script>
+/* ============================================================
+   Lightweight test runner — zero dependencies
+   ============================================================ */
+
+const logEl = document.getElementById('log');
+const summaryEl = document.getElementById('summary');
+let passed = 0;
+let failed = 0;
+
+function assert(condition, message) {
+  if (condition) {
+    passed++;
+    logEl.innerHTML += `<span class="pass">  ✓ ${message}</span>\n`;
+  } else {
+    failed++;
+    logEl.innerHTML += `<span class="fail">  ✗ ${message}</span>\n`;
+  }
+}
+
+function section(name) {
+  logEl.innerHTML += `\n<strong>${name}</strong>\n`;
+}
+
+// ---- Tests ----
+
+section('1. Default generation');
+(() => {
+  const r = generatePassword();
+  assert(!r.error, 'No error on defaults');
+  assert(r.password.length === 20, 'Default length is 20');
+  assert(/[A-Z]/.test(r.password), 'Contains uppercase');
+  assert(/[a-z]/.test(r.password), 'Contains lowercase');
+  assert(/[0-9]/.test(r.password), 'Contains digit');
+  assert(/[^a-zA-Z0-9]/.test(r.password), 'Contains special character');
+})();
+
+section('2. Length bounds');
+(() => {
+  const r8 = generatePassword({ length: 8 });
+  assert(!r8.error && r8.password.length === 8, 'Length 8 produces 8-char password');
+
+  const r128 = generatePassword({ length: 128 });
+  assert(!r128.error && r128.password.length === 128, 'Length 128 produces 128-char password');
+
+  const rLow = generatePassword({ length: 3 });
+  assert(!!rLow.error, 'Length 3 returns error');
+
+  const rHigh = generatePassword({ length: 200 });
+  assert(!!rHigh.error, 'Length 200 returns error');
+})();
+
+section('3. Individual character sets');
+(() => {
+  const rUpper = generatePassword({ includeLowercase: false, includeDigits: false, includeSpecial: false });
+  assert(!rUpper.error && /^[A-Z]+$/.test(rUpper.password), 'Uppercase-only produces only uppercase');
+
+  const rLower = generatePassword({ includeUppercase: false, includeDigits: false, includeSpecial: false });
+  assert(!rLower.error && /^[a-z]+$/.test(rLower.password), 'Lowercase-only produces only lowercase');
+
+  const rDigits = generatePassword({ includeUppercase: false, includeLowercase: false, includeSpecial: false });
+  assert(!rDigits.error && /^[0-9]+$/.test(rDigits.password), 'Digits-only produces only digits');
+
+  const rSpecial = generatePassword({ includeUppercase: false, includeLowercase: false, includeDigits: false });
+  assert(!rSpecial.error && /^[^a-zA-Z0-9]+$/.test(rSpecial.password), 'Special-only produces only special chars');
+})();
+
+section('4. Guaranteed inclusion');
+(() => {
+  // Run multiple times to be confident
+  let allGood = true;
+  for (let i = 0; i < 30; i++) {
+    const r = generatePassword({ length: 8 });
+    if (r.error) { allGood = false; break; }
+    if (!/[A-Z]/.test(r.password)) { allGood = false; break; }
+    if (!/[a-z]/.test(r.password)) { allGood = false; break; }
+    if (!/[0-9]/.test(r.password)) { allGood = false; break; }
+    if (!/[^a-zA-Z0-9]/.test(r.password)) { allGood = false; break; }
+  }
+  assert(allGood, 'All 4 sets represented in 30 consecutive 8-char passwords');
+})();
+
+section('5. Exclude ambiguous');
+(() => {
+  const ambiguous = '0OolI1|';
+  let clean = true;
+  for (let i = 0; i < 30; i++) {
+    const r = generatePassword({ excludeAmbiguous: true });
+    if (r.error) { clean = false; break; }
+    for (const ch of ambiguous) {
+      if (r.password.includes(ch)) { clean = false; break; }
+    }
+    if (!clean) break;
+  }
+  assert(clean, 'No ambiguous characters in 30 passwords with excludeAmbiguous ON');
+})();
+
+section('6. Exclude similar');
+(() => {
+  const similar = "{}[]()/<>\\'\"`~,;:.";
+  let clean = true;
+  for (let i = 0; i < 30; i++) {
+    const r = generatePassword({ excludeSimilar: true });
+    if (r.error) { clean = false; break; }
+    for (const ch of similar) {
+      if (r.password.includes(ch)) { clean = false; break; }
+    }
+    if (!clean) break;
+  }
+  assert(clean, 'No similar characters in 30 passwords with excludeSimilar ON');
+})();
+
+section('7. No consecutive repeats');
+(() => {
+  let good = true;
+  for (let i = 0; i < 50; i++) {
+    const r = generatePassword({ noConsecutiveRepeats: true });
+    if (r.error) { good = false; break; }
+    if (/(.)\1/.test(r.password)) { good = false; break; }
+  }
+  assert(good, 'No consecutive repeats in 50 passwords');
+
+  // Verify repeats CAN happen when toggle is off (probabilistic — use small pool)
+  let foundRepeat = false;
+  for (let i = 0; i < 200; i++) {
+    const r = generatePassword({
+      length: 128,
+      noConsecutiveRepeats: false,
+      includeUppercase: false,
+      includeLowercase: false,
+      includeSpecial: false,
+    }); // digits only — 10 chars, long password
+    if (r.password && /(.)\1/.test(r.password)) { foundRepeat = true; break; }
+  }
+  assert(foundRepeat, 'Consecutive repeats possible when toggle is OFF (digits-only 128-char)');
+})();
+
+section('8. Begin with letter');
+(() => {
+  let good = true;
+  for (let i = 0; i < 50; i++) {
+    const r = generatePassword({ beginWithLetter: true });
+    if (r.error) { good = false; break; }
+    if (!/^[a-zA-Z]/.test(r.password)) { good = false; break; }
+  }
+  assert(good, 'First character is a letter in 50 passwords with beginWithLetter ON');
+
+  // Error when no letter sets are enabled
+  const rErr = generatePassword({
+    beginWithLetter: true,
+    includeUppercase: false,
+    includeLowercase: false,
+  });
+  assert(!!rErr.error, 'Error when beginWithLetter ON but no letter sets enabled');
+})();
+
+section('9. All character sets disabled');
+(() => {
+  const r = generatePassword({
+    includeUppercase: false,
+    includeLowercase: false,
+    includeDigits: false,
+    includeSpecial: false,
+  });
+  assert(!!r.error, 'Returns error when all sets disabled');
+  assert(r.error.includes('At least one'), 'Error message mentions requirement');
+})();
+
+section('10. Edge cases');
+(() => {
+  // Length too short for 4 guaranteed chars
+  const r = generatePassword({ length: 3 });
+  assert(!!r.error, 'Error when length < minimum (8)');
+
+  // Exclude ambiguous with digits only — pool becomes very small
+  const r2 = generatePassword({
+    includeUppercase: false,
+    includeLowercase: false,
+    includeSpecial: false,
+    excludeAmbiguous: true,
+  });
+  assert(!r2.error, 'Digits with excludeAmbiguous still works (pool: 2-9)');
+  assert(/^[2-9]+$/.test(r2.password), 'Only non-ambiguous digits present');
+
+  // Both exclude filters with all sets
+  const r3 = generatePassword({ excludeAmbiguous: true, excludeSimilar: true });
+  assert(!r3.error, 'Both exclude filters with all sets enabled works');
+  assert(r3.password.length === 20, 'Still produces 20-char password');
+})();
+
+section('11. Bulk / fuzz run (50 passwords, default settings)');
+(() => {
+  let failures = 0;
+  for (let i = 0; i < 50; i++) {
+    const r = generatePassword();
+    if (r.error) { failures++; continue; }
+    if (r.password.length !== 20) failures++;
+    if (!/[A-Z]/.test(r.password)) failures++;
+    if (!/[a-z]/.test(r.password)) failures++;
+    if (!/[0-9]/.test(r.password)) failures++;
+    if (!/[^a-zA-Z0-9]/.test(r.password)) failures++;
+    if (/(.)\1/.test(r.password)) failures++;
+  }
+  assert(failures === 0, `All 50 default passwords valid (failures: ${failures})`);
+})();
+
+// ---- Summary ----
+
+const total = passed + failed;
+summaryEl.innerHTML = failed === 0
+  ? `<span class="pass">ALL ${total} TESTS PASSED ✓</span>`
+  : `<span class="fail">${failed} of ${total} TESTS FAILED</span>`;
+
+document.title = failed === 0 ? `✓ Tests Passed (${total})` : `✗ ${failed} Failed`;
+</script>
+</body>
+</html>
