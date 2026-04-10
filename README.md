@@ -105,6 +105,11 @@ passwordgenerator/
 ├── sw.js             Service worker for offline app-shell caching
 ├── tests.html        Browser-based test suite (open in browser to run)
 ├── tests.py          Command-line test suite (run with: python tests.py)
+├── .github/
+│   ├── CODEOWNERS    Requires @henrik-me ownership for workflow changes
+│   └── workflows/
+│       └── deploy-azure-static-web-app.yml
+│                     Manual production deploy workflow for Azure Static Web Apps
 ├── INSTRUCTIONS.md   Full project specification and requirements
 └── README.md         This file
 ```
@@ -179,6 +184,32 @@ The test suite covers all 11 areas specified in `INSTRUCTIONS.md`:
 9. All character sets disabled (error handling)
 10. Edge cases (short length, small pool, combined filters)
 11. Bulk / fuzz run (50 passwords under default settings)
+
+---
+
+## Azure Static Web Apps Deployment
+
+The repository includes a **manual-only** GitHub Actions workflow at
+`.github/workflows/deploy-azure-static-web-app.yml` for production deployment to **Azure Static Web
+Apps**.
+
+### Deployment model
+
+1. Create an Azure Static Web App in Azure.
+2. Copy its deployment token into the GitHub **`production` environment** as the secret
+   `AZURE_STATIC_WEB_APPS_API_TOKEN`.
+3. Run **Actions → Deploy Azure Static Web App** manually from the **`main`** branch.
+4. Approve the job through the protected **`production`** environment before deployment proceeds.
+
+### Guardrails
+
+- The workflow is triggered by **`workflow_dispatch` only** — it does not auto-deploy on pushes or
+  pull requests.
+- The deploy job runs only when the selected ref is **`main`**.
+- The workflow runs the existing `python tests.py` suite before deployment.
+- Only the app files (`index.html`, `style.css`, `app.js`, `sw.js`) are copied into the deploy
+  bundle, so docs and tests are not published.
+- Workflow file changes are covered by **CODEOWNERS** and routed to **`@henrik-me`**.
 
 ---
 
