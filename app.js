@@ -148,6 +148,22 @@ function generatePassword(options = {}) {
 
 // ---- DOM wiring ----
 
+function registerServiceWorker() {
+  const isSupportedProtocol = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+
+  if (!('serviceWorker' in navigator) || !window.isSecureContext || !isSupportedProtocol) {
+    return;
+  }
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((error) => {
+      console.warn('Service worker registration failed.', error);
+    });
+  }, { once: true });
+}
+
+registerServiceWorker();
+
 document.addEventListener('DOMContentLoaded', () => {
   const els = {
     lengthSlider: document.getElementById('length-slider'),
@@ -165,6 +181,10 @@ document.addEventListener('DOMContentLoaded', () => {
     passwordOutput: document.getElementById('password-output'),
     errorMsg: document.getElementById('error-msg'),
   };
+
+  if (Object.values(els).some((el) => el === null)) {
+    return;
+  }
 
   const charSetToggles = [els.includeUppercase, els.includeLowercase, els.includeDigits, els.includeSpecial];
 

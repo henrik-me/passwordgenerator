@@ -10,12 +10,14 @@ start generating passwords.
 
 ## Quick Start
 
-1. Open **`index.html`** in your browser (Chrome, Firefox, Edge, or Safari).
+1. Open **`index.html`** directly in your browser for local use, or serve the folder from
+   **localhost / HTTPS** if you want service-worker offline caching.
 2. Adjust the settings using the toggle switches and length slider.
 3. Click **Generate** (or press **Enter**).
 4. Click **Copy** to copy the password to your clipboard.
 
-That's it — no build step, no terminal commands, no internet connection required.
+That's it — no build step and no dependencies. When hosted on localhost or HTTPS, the app can also
+cache itself for later offline use after the first successful visit.
 
 ---
 
@@ -30,6 +32,31 @@ That's it — no build step, no terminal commands, no internet connection requir
 - **Zero dependencies** — pure HTML, CSS, and JavaScript. No frameworks, no npm, no build tools.
 - **Private** — passwords are generated entirely in your browser. Nothing is stored, logged, or
   sent over a network.
+- **Offline-capable** — when served from localhost or HTTPS, a service worker precaches the app
+  shell so the generator can reopen offline after it has been loaded once.
+
+---
+
+## Offline Support
+
+When the app is served from **`https://`** or **`http://localhost`**, it registers `sw.js` and
+precaches the core app shell:
+
+- `index.html`
+- `style.css`
+- `app.js`
+
+After that first successful online load, later visits can be served from the browser cache even if
+the original host is temporarily unavailable.
+
+### Offline caveats
+
+- The **first visit must be online** so the service worker can install and cache the app shell.
+- Service workers require a **secure context** (`https://`) or **localhost**. They do not register
+  when opening the app from `file://`.
+- If the browser's site data or cache is cleared, the offline copy is removed.
+- Cached files are versioned in the service worker. Updating offline assets requires shipping a new
+  service worker cache version.
 
 ---
 
@@ -75,6 +102,7 @@ passwordgenerator/
 ├── index.html        UI structure and element wiring
 ├── style.css         All visual styling (dark theme, responsive layout)
 ├── app.js            Password generation engine + DOM event handling
+├── sw.js             Service worker for offline app-shell caching
 ├── tests.html        Browser-based test suite (open in browser to run)
 ├── tests.py          Command-line test suite (run with: python tests.py)
 ├── INSTRUCTIONS.md   Full project specification and requirements
@@ -107,6 +135,8 @@ making it easy to extract into a module or call from a future backend API.
   button with brief "Copied!" feedback.
 - Inline error messages appear when settings are invalid (e.g., all character sets disabled).
 - A password is generated automatically on page load with the default settings.
+- When supported, a service worker caches the app shell so the page can load offline after the
+  first hosted visit.
 
 ### Security Model
 
@@ -192,4 +222,4 @@ See `INSTRUCTIONS.md` for the full project specification.
 
 ---
 
-*Last updated: March 2026*
+*Last updated: April 2026*
